@@ -14,6 +14,7 @@ products = [
       { rating: 5, comment: "Amazing value for money." },
     ],
     showReviews: false,
+    soldOut: false,
   },
   {
     name: "Camera",
@@ -22,6 +23,7 @@ products = [
     image: "camera.jpg",
     reviews: [{ rating: 3, comment: "Works well but a bit outdated." }],
     showReviews: false,
+    soldOut: false,
   },
   {
     name: "Smartphone",
@@ -34,6 +36,7 @@ products = [
       { rating: 3, comment: "Good value for money." },
     ],
     showReviews: false,
+    soldOut: false,
   },
 ];
 const newProducts = [
@@ -47,6 +50,7 @@ const newProducts = [
       { rating: 4, comment: "Good value for the price." },
     ],
     showReviews: false,
+    soldOut: false,
   },
   {
     name: "Headphones",
@@ -55,6 +59,7 @@ const newProducts = [
     image: "headphones.jpg",
     reviews: [{ rating: 4, comment: "Great sound quality!" }],
     showReviews: false,
+    soldOut: false,
   },
   {
     name: "Gaming Mouse",
@@ -66,6 +71,7 @@ const newProducts = [
       { rating: 4, comment: "Great precision and comfort." },
     ],
     showReviews: false,
+    soldOut: false,
   },
   {
     name: "Tripod",
@@ -77,6 +83,7 @@ const newProducts = [
       { rating: 5, comment: "Amazing value for money." },
     ],
     showReviews: false,
+    soldOut: false,
   },
   {
     name: "Camera",
@@ -85,6 +92,7 @@ const newProducts = [
     image: "camera.jpg",
     reviews: [{ rating: 3, comment: "Works well but a bit outdated." }],
     showReviews: false,
+    soldOut: false,
   },
   {
     name: "Smartwatch",
@@ -96,6 +104,7 @@ const newProducts = [
       { rating: 5, comment: "Perfect for daily use." },
     ],
     showReviews: false,
+    soldOut: false,
   },
 ];
 
@@ -129,37 +138,51 @@ function displayProducts() {
     const div = document.createElement("div");
     div.classList.add("product-card");
     div.innerHTML = `
-            <img src="${product.image}" alt="${
-      product.name
-    }" class="product-image">
-            <h3>${product.name}</h3>
-            <p>${product.description}</p>
-            <p>Price: ₹${product.price}</p>
-            <button onclick="addToCart('${product.name}', ${
-      product.price
-    })">Add to Cart</button>
-            <button onclick="subscribeToProduct('${
-              product.name
-            }')">Notify Me When Sold</button>
-            <button onclick="toggleReviews(${index})">${
-      product.showReviews ? "Hide Reviews" : "Show Reviews"
-    }</button>
-            <div class="reviews" style="display: ${
-              product.showReviews ? "block" : "none"
-            };">
-                <h4>Reviews:</h4>
-                ${getProductReviews(product)}
-                <form onsubmit="addReview(${index}); return false;">
-                    <label>Rating (1-5):</label>
-                    <input type="number" min="1" max="5" id="rating-${index}" required>
-                    <textarea id="review-${index}" placeholder="Write a review" required></textarea>
-                    <button type="submit">Submit Review</button>
-                </form>
-            </div>
-        `;
+      <div class="product-image-wrapper">
+        <img src="${product.image}" alt="${product.name}" class="product-image">
+        ${product.soldOut ? '<span class="sold-out">Sold Out</span>' : ''}
+      </div>
+      <h3>${product.name}</h3>
+      <p>${product.description}</p>
+      <p>Price: ₹${product.price}</p>
+      <button onclick="addToCart('${product.name}', ${product.price})" ${product.soldOut ? 'disabled' : ''}>
+        ${product.soldOut ? 'Sold Out' : 'Add to Cart'}
+      </button>
+      <button onclick="subscribeToProduct('${product.name}')">Notify Me When Sold</button>
+      <button onclick="toggleReviews(${index})">${product.showReviews ? "Hide Reviews" : "Show Reviews"}</button>
+      <div class="reviews" style="display: ${product.showReviews ? "block" : "none"};">
+        <h4>Reviews:</h4>
+        ${getProductReviews(product)}
+        <form onsubmit="addReview(${index}); return false;">
+          <label>Rating (1-5):</label>
+          <input type="number" min="1" max="5" id="rating-${index}" required>
+          <textarea id="review-${index}" placeholder="Write a review" required></textarea>
+          <button type="submit">Submit Review</button>
+        </form>
+      </div>
+    `;
     productList.appendChild(div);
   });
 }
+
+// Add 'Sold Out' overlay styling
+const style = document.createElement("style");
+style.innerHTML = `
+  .product-image-wrapper {
+    position: relative;
+  }
+  .sold-out {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(255, 0, 0, 0.7);
+    color: white;
+    padding: 5px;
+    font-weight: bold;
+    border-radius: 5px;
+  }
+`;
+document.head.appendChild(style);
 
 function toggleReviews(productIndex) {
   products[productIndex].showReviews = !products[productIndex].showReviews;
@@ -271,12 +294,17 @@ if (currentUser) {
 }
 
 function addToCart(name, price) {
-  cart.push({ name, price });
-  updateCart();
-  localStorage.setItem("cart", JSON.stringify(cart));
-  alert(`${name} has been added to your cart!`);
+  const product = products.find((p) => p.name === name);
+  if (product && !product.soldOut) {
+    cart.push({ name, price });
+    product.soldOut = true; // Mark product as sold out
+    updateCart();
+    localStorage.setItem("cart", JSON.stringify(cart));
+    localStorage.setItem("products", JSON.stringify(products));
+    alert(`${name} has been added to your cart!`);
+    displayProducts(); // Update product display to show "Sold Out"
+  }
 }
-
 function updateCart() {
   const cartItems = document.getElementById("cart-items");
   const totalPriceElem = document.getElementById("total-price");
