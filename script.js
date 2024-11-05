@@ -148,7 +148,7 @@ function displayProducts() {
       <button onclick="addToCart('${product.name}', ${product.price})" ${product.soldOut ? 'disabled' : ''}>
         ${product.soldOut ? 'Sold Out' : 'Add to Cart'}
       </button>
-      <button onclick="subscribeToProduct('${product.name}')">Notify Me</button>
+      <button onclick="subscribeToProduct('${product.name}')"> Notify Me </button>
       <button onclick="toggleReviews(${index})">${product.showReviews ? "Hide Reviews" : "Show Reviews"}</button>
       <div class="reviews" style="display: ${product.showReviews ? "block" : "none"};">
         <h4>Reviews:</h4>
